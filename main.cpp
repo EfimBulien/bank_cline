@@ -11,9 +11,9 @@ private:
 
 public:
     bank_account(const int acc_number, const double initial_balance) {
-        account_number_ = acc_number;
-        balance_ = initial_balance;
-        interest_rate_ = 0.0;
+        this -> account_number_ = acc_number;
+        this -> balance_ = initial_balance;
+        this -> interest_rate_ = 0.0;
     }
 
     void deposit(const double amount) {
@@ -34,12 +34,12 @@ public:
         }
     }
 
-    double get_balance() const {
-        return balance_;
-    }
-
     double get_interest() const {
         return balance_ * interest_rate_ / 12;
+    }
+
+    double get_balance() const {
+        return balance_;
     }
 
     void set_interest_rate(const double rate) {
@@ -64,6 +64,16 @@ bool transfer(bank_account& from, bank_account& to, const double amount) {
     return false;
 }
 
+vector<bank_account>::iterator find_account_by_number(vector<bank_account>& accounts, int account_number) {
+    for (auto current_account = accounts.begin();
+    current_account != accounts.end(); ++current_account) {
+        if (current_account->get_account_number() == account_number) {
+            return current_account;
+        }
+    }
+    return accounts.end();
+}
+
 void bank_account_interface(bank_account& account, vector<bank_account>& accounts) {
     int choice;
     double amount;
@@ -72,8 +82,9 @@ void bank_account_interface(bank_account& account, vector<bank_account>& account
     cout << "1. Deposit funds" << '\n';
     cout << "2. Withdraw funds" << '\n';
     cout << "3. Get balance" << '\n';
-    cout << "4. Set interest rate" << '\n';
-    cout << "5. Transfer funds" << '\n';
+    cout << "4. Get interest rate" << '\n';
+    cout << "5. Set interest rate" << '\n';
+    cout << "6. Transfer funds" << '\n';
     cout << "0. Exit" << '\n';
     cout << "Your choice: ";
     cin >> choice;
@@ -96,22 +107,27 @@ void bank_account_interface(bank_account& account, vector<bank_account>& account
             break;
 
         case 4:
+            cout << "Current balance: $" << account.get_interest() << '\n';
+            break;
+
+        case 5:
             cout << "Enter new interest rate: ";
             cin >> amount;
             account.set_interest_rate(amount);
             break;
 
-        case 5: {
+        case 6: {
             int to_account_number;
             cout << "Enter account number to transfer to: ";
             cin >> to_account_number;
             cout << "Enter amount to transfer: $";
             cin >> amount;
 
-            const auto it = find_if(accounts.begin(), accounts.end(),
-                                    [&](const bank_account& acc) { return acc.get_account_number() == to_account_number; });
-            if (it != accounts.end()) {
-                transfer(account, *it, amount);
+            auto current_account
+            = find_account_by_number(accounts, to_account_number);
+
+            if (current_account != accounts.end()) {
+                transfer(account, *current_account, amount);
             } else {
                 cout << "Recipient account not found." << '\n';
             }
